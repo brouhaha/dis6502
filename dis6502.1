@@ -45,7 +45,10 @@ Read in the predefine file \fIpfile\fP.
 Up to 20 \fI-p\fP options may be included.
 .TP
 .I \-v \fIaddress\fP
-Usa an alternate address for the reset and interrupt vectors.
+Use an alternate address for the reset and interrupt vectors.
+.TP
+.I \-7
+Mask off MSB of character data.
 .PP
 Lines in pfile consist of:
 .PP
@@ -69,6 +72,6 @@ the trace process to continue at the address given.
 .I .stop
 causes the
 trace process to stop at the address given.
-.SH AUTHOR
+.SH AUTHORS
 Robert Bond, Udi Finkelstein, and Eric Smith
 .SH BUGS

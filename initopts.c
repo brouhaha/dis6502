@@ -29,7 +29,8 @@ void usage (void)
 	           "            -c             Commodore 64\n"
                    "  options:  -a             assembly output\n"
                    "            -p <file>      predefs\n"
-	           "            -v <address>   alternate vector address\n",
+	           "            -v <address>   alternate vector address\n"
+	   	   "            -7             mask character data to 7-bit",
 	   progname);
   exit (1);
 }
@@ -80,6 +81,9 @@ void initopts (int argc, char *argv[])
 		break;
 	      case 'b':
 		bopt = ATARI_BOOT;
+		break;
+	      case '7':
+		sevenbit = 1;
 		break;
 	      default: crash("Invalid option letter");
 	      }

@@ -1,3 +1,29 @@
+/*
+ * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
+ *
+ * $Id: dis.h,v 1.5 2003/09/15 21:46:32 eric Exp $
+ * Copyright 2000-2003 Eric Smith <eric@brouhaha.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.  Note that permission is
+ * not granted to redistribute this program under the terms of any
+ * other version of the General Public License.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
+ */
+
+
+extern int sevenbit;  /* if true, mask character data with 0x7f
+			 to ignore MSB */
+
 typedef uint16_t addr_t;
 
 #define NPREDEF 10
