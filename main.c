@@ -82,6 +82,7 @@ void trace_inst (addr_t addr)
       switch(ip->nb)
 	{
 	case 1:
+	  operand = 0;  /* only to avoid "may be used unitialized" warning */
 	  break;
 	case 2:
 	  operand = getbyte(addr);
