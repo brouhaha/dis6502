@@ -1,12 +1,12 @@
 OBJS = main.o initopts.o lex.o ref.o print.o tbl.o
 SRCS = dis.h main.c initopts.c lex.l ref.c print.c tbl.c 
-CFLAGS = -g
+CFLAGS = -g -Wall
 
-dis:		$(OBJS)
-		cc $(OBJS) -o dis
+dis6502:	$(OBJS)
+		cc $(OBJS) -o dis6502
 
 tbl.o:		dis.h tbl.c
-		cc -c tbl.c
+#		cc -c tbl.c
 
 initopts.o:	dis.h initopts.c
 
@@ -30,7 +30,7 @@ clean:
 		rm -f $(OBJS) lex.c dis.man
 
 clobber:	clean
-		rm -f dis
+		rm -f dis6502
 
 ckpt:		$(SRCS)
 		ci -l $(SRCS)
@@ -38,5 +38,5 @@ ckpt:		$(SRCS)
 lint: dis.h main.c initopts.c lex.c ref.c print.c tbl.c 
 		lint  dis.h main.c initopts.c lex.c ref.c print.c tbl.c 
 
-shar:		Makefile dis.1 $(SRCS)
-		shar -f shar Makefile dis.1 $(SRCS)
+# shar:		Makefile dis.1 $(SRCS)
+# 		shar -f shar Makefile dis.1 $(SRCS)
