@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 
 #include "dis.h"
@@ -6,14 +7,14 @@
 #define HTMASK (HTSIZE-1)
 
 struct hashslot {
-	int addr;			/* The key */
+	addr_t addr;			/* The key */
 	struct ref_chain *ref;		/* Who references it */
 	char *name;			/* The symbolic name (if it has one) */
 };
 
 struct   hashslot hashtbl[HTSIZE];	/* the hash table */
 
-struct hashslot *hash (int loc, int allocate)
+struct hashslot *hash (addr_t loc, int allocate)
 {
 	int probes;
 	register struct hashslot *hp;
@@ -42,7 +43,7 @@ struct hashslot *hash (int loc, int allocate)
 	/*NOTREACHED*/
 }
 
-void save_ref (int refer, int refee) 
+void save_ref (addr_t refer, addr_t refee) 
 {
 	struct ref_chain *rc;
 	struct hashslot *hp;
@@ -54,7 +55,7 @@ void save_ref (int refer, int refee)
 	hp->ref = rc;
 }
 
-void save_name (int loc, char *name)
+void save_name (addr_t loc, char *name)
 {
 	struct hashslot *hp;
 
@@ -62,8 +63,7 @@ void save_name (int loc, char *name)
 	hp->name = name;
 }
 
-struct ref_chain *
-get_ref(loc)
+struct ref_chain *get_ref(addr_t loc)
 {
 	struct hashslot *hp;
 
@@ -73,8 +73,7 @@ get_ref(loc)
 	return(hp->ref);
 }
 
-char *
-get_name(loc)
+char * get_name(addr_t loc)
 {
 	struct hashslot *hp;
 

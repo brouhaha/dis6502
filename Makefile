@@ -1,5 +1,5 @@
-OBJS = main.o initopts.o lex.o ref.o print.o tbl.o
-SRCS = dis.h main.c initopts.c lex.l ref.c print.c tbl.c 
+OBJS = main.o initopts.o lex.o ref.o print.o tbl.o trace_queue.o
+SRCS = dis.h main.c initopts.c lex.l ref.c print.c tbl.c trace_queue.c
 CFLAGS = -g -Wall
 
 dis6502:	$(OBJS)
@@ -19,6 +19,8 @@ lex.c:		dis.h lex.l
 ref.o:		dis.h ref.c
 
 print.o:	dis.h print.c
+
+trace_queue.o:	dis.h trace_queue.c
 
 dis.man:	dis.1
 		nroff -man dis.1 > dis.man

@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -11,14 +12,14 @@ char *strcpy();
 char *strcat();
 
 
-static int has_offset (int i)
+static int has_offset (addr_t i)
 {
   return ((i > 0) && (! (f [i] & NAMED)) &&
 	  ((f [i-1] & (NAMED | DREF)) == (NAMED | DREF)));
 }
 
 
-static char *lname (int i, int offset_ok)
+static char *lname (addr_t i, int offset_ok)
 {
 	static char buf[20];
 	char t;
@@ -53,7 +54,7 @@ static char *lname (int i, int offset_ok)
 }
 
 
-static int print_label (int i)
+static int print_label (addr_t i)
 {
   if (f[i] & (NAMED | JREF | SREF | DREF)) 
     {
@@ -66,7 +67,7 @@ static int print_label (int i)
 
 void dumpitout (void)
 {
-  int i;
+  uint32_t i;  /* must be larger than an addr_t */
 
   for(i = 0; i<0x10000;) 
     {
@@ -120,7 +121,7 @@ int pchar (int c)
 	return('.');
 }
 
-void print_bytes (int addr)
+void print_bytes (addr_t addr)
 {
 	register struct info *ip; 
 
@@ -145,7 +146,7 @@ void print_bytes (int addr)
 }
 		
 
-int print_inst(int addr)
+int print_inst(addr_t addr)
 {
 	int opcode;
 	register struct info *ip; 
@@ -212,7 +213,7 @@ int print_inst(int addr)
 
 }
 
-int print_data (int i)
+int print_data (addr_t i)
 {
 	int count;
 	int j;
@@ -249,8 +250,8 @@ void print_refs (void)
 	char tname[50];
 	char cmd[200];
 	FILE *fp;
-	register struct ref_chain *rp;
-	register int i;
+	struct ref_chain *rp;
+	uint32_t i;  /* must be larger than an addr_t */
 	int npline;
 
 	(void)sprintf(tname, "dis.%d", getpid());

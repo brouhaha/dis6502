@@ -1,5 +1,6 @@
 %{
 #undef ECHO
+#include <stdint.h>
 #include <string.h>
 #include "dis.h"
 int lineno = 0;

@@ -1,3 +1,5 @@
+typedef uint16_t addr_t;
+
 #define NPREDEF 10
 
 extern char *predef[];
@@ -69,8 +71,8 @@ struct ref_chain {
 	int who;
 };
 
-struct ref_chain *get_ref();
-char *get_name();
+struct ref_chain *get_ref(addr_t loc);
+char *get_name(addr_t loc);
 
 /* lex junk */
 
@@ -108,16 +110,21 @@ void initopts (int argc, char *argv[]);
 /* in print.c: */
 void dumpitout (void);
 int pchar (int c);
-char *lname (int i);
-int print_label (int i);
-void print_bytes (int addr);
-int print_inst(int addr);
-int print_data (int i);
+void print_bytes (addr_t addr);
+int print_inst(addr_t addr);
+int print_data (addr_t i);
 void print_refs (void);
 
 /* in ref.c: */
-void save_ref (int refer, int refee);
-void save_name (int loc, char *name);
+void save_ref (addr_t refer, addr_t refee);
+void save_name (addr_t loc, char *name);
+
+/* in trace_queue.c: */
+void init_trace_queue (void);
+int trace_queue_empty (void);
+void push_trace_queue (addr_t addr);
+addr_t pop_trace_queue (void);
+
 
 /* in main.c: */
 void crash (char *p) __attribute__ ((noreturn));

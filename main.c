@@ -1,3 +1,4 @@
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -42,113 +43,136 @@ void crash (char *p)
 	exit(1);
 }
 
-void trace (unsigned int addr)
+
+void add_trace (addr_t addr)
 {
-	int opcode;
-	register struct info *ip; 
-	int operand;
-	int istart;
-
-	if (f[addr] & TDONE)
-		return;
-	else 
-		f[addr] |= TDONE;
-
-	istart = addr;
-	opcode = getbyte(addr);
-	ip = &optbl[opcode];
-
-	if (ip->flag & ILL)
-		return;
-
-	f[addr] |= ISOP;
-
-	addr++;
-
-	/* Get the operand */
-
-	switch(ip->nb) {
-		case 1:
-			break;
-		case 2:
-			operand = getbyte(addr);
-			f[addr++] |= TDONE;
-			break;
-		case 3:
-			operand = getword(addr);
-			f[addr++] |= TDONE;
-			f[addr++] |= TDONE;
-			break;
-	}
-
-	/* Mark data references */
-
-	switch (ip->flag & ADRMASK) {
-		case IMM:
-		case ACC:
-		case IMP:
-		case REL:
-		case IND:
-			break;
-		case ABS:
-			if (ip->flag & (JUMP | FORK))
-				break;
-			/* Fall into */
-		case ABX:
-		case ABY:
-		case INX:
-		case INY:
-		case ZPG:
-		case ZPX:
-		case ZPY:
-			f[operand] |= DREF;
-			save_ref(istart, operand);
-			break;
-		default:
-			crash("Optable error");
-			break;
-	}
-
-	/* Trace the next instruction */
-
-	switch (ip->flag & CTLMASK) {
-		case NORM:
-			trace(addr);
-			break;
-		case JUMP:
-			f[operand] |= JREF;
-			save_ref(istart, operand);
-			trace(operand);
-			break;
-		case FORK:
-			if (ip->flag & REL) {
-				if (operand > 127) 
-					operand = (~0xff | operand);
-				operand = operand + addr;
-				f[operand] |= JREF;
-			} else {
-				f[operand] |= SREF;
-			}
-			save_ref(istart, operand);
-			trace(operand);
-			trace(addr);
-			break;
-		case STOP:
-			break;
-		default:
-			crash("Optable error");
-			break;
-	}
+  if (f [addr] & TDONE)
+    return;
+  push_trace_queue (addr);
 }
 
-void start_trace (unsigned int loc, char *name)
+
+void trace_inst (addr_t addr)
+{
+  int opcode;
+  register struct info *ip; 
+  int operand;
+  int istart;
+
+  for (;;)
+    {
+      if (f[addr] & TDONE)
+	return;
+
+      f[addr] |= TDONE;
+
+      istart = addr;
+      opcode = getbyte(addr);
+      ip = &optbl[opcode];
+
+      if (ip->flag & ILL)
+	return;
+
+      f[addr] |= ISOP;
+
+      addr++;
+
+      /* Get the operand */
+
+      switch(ip->nb)
+	{
+	case 1:
+	  break;
+	case 2:
+	  operand = getbyte(addr);
+	  f[addr++] |= TDONE;
+	  break;
+	case 3:
+	  operand = getword(addr);
+	  f[addr++] |= TDONE;
+	  f[addr++] |= TDONE;
+	  break;
+	}
+
+      /* Mark data references */
+
+      switch (ip->flag & ADRMASK)
+	{
+	case IMM:
+	case ACC:
+	case IMP:
+	case REL:
+	case IND:
+	  break;
+	case ABS:
+	  if (ip->flag & (JUMP | FORK))
+	    break;
+	  /* Fall into */
+	case ABX:
+	case ABY:
+	case INX:
+	case INY:
+	case ZPG:
+	case ZPX:
+	case ZPY:
+	  f[operand] |= DREF;
+	  save_ref(istart, operand);
+	  break;
+	default:
+	  crash("Optable error");
+	  break;
+	}
+
+      /* Trace the next instruction */
+
+      switch (ip->flag & CTLMASK)
+	{
+	case NORM:
+	  break;
+	case JUMP:
+	  f[operand] |= JREF;
+	  save_ref(istart, operand);
+	  add_trace(operand);
+	  return;
+	case FORK:
+	  if (ip->flag & REL) 
+	    {
+	      if (operand > 127) 
+		operand = (~0xff | operand);
+	      operand = operand + addr;
+	      f[operand] |= JREF;
+	    }
+	  else
+	    {
+	      f[operand] |= SREF;
+	    }
+	  save_ref(istart, operand);
+	  add_trace(operand);
+	  break;
+	case STOP:
+	  return;
+	default:
+	  crash("Optable error");
+	}
+    }
+}
+
+
+void trace_all (void)
+{
+  while (! trace_queue_empty ())
+    trace_inst (pop_trace_queue ());
+}
+
+
+void start_trace (addr_t loc, char *name)
 {
 	fprintf(stderr, "Trace: %4x %s\n", loc, name);
 	f[loc] |= (NAMED | SREF);
 	if (!get_name(loc))
 		save_name(loc, name);
 	save_ref(0, loc);
-	trace(loc);
+	add_trace(loc);
 }
 	
 
@@ -206,6 +230,9 @@ void do_jtab2 (void)
 int main (int argc, char *argv[])
 {
 	initopts(argc, argv);
+
+	init_trace_queue ();
+
 	if (npredef > 0) {
 		cur_file = predef[0];
 		pre_index++;
@@ -236,6 +263,8 @@ int main (int argc, char *argv[])
 	do_ptrace ();
 	do_rtstab ();
 	do_jtab2 ();
+
+	trace_all ();
 
 	dumpitout();
 
@@ -442,7 +471,7 @@ void loadfile (void)
 void c64loadfile (void)
 {
 	FILE *fp;
-	unsigned int base_addr,i;
+	addr_t base_addr,i;
 	int c;
 
 	fp = fopen(file, "r");
@@ -468,9 +497,9 @@ void c64loadfile (void)
 void binaryloadfile (void)
 {
   FILE *fp;
-  unsigned int i;
+  addr_t i;
   int c;
-  unsigned int reset, irq, nmi;
+  addr_t reset, irq, nmi;
 
   fp = fopen (file, "r");
 
