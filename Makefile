@@ -1,6 +1,6 @@
 # dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
 # Makefile
-# $Id: Makefile,v 1.6 2003/09/15 21:51:38 eric Exp $
+# $Id: Makefile,v 1.7 2003/09/15 22:50:28 eric Exp $
 # Copyright 2000-2003 Eric Smith
 #
 # This program is free software; you can redistribute it and/or modify
@@ -118,4 +118,5 @@ DEPENDS = $(ALL_CSRCS:.c=.d)
 -include $(DEPENDS)
 
 
-
+%.dis: %.bin %.defs
+	dis6502 -p $*.defs -r 0xe000 $*.bin >$*.dis
