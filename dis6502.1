@@ -1,4 +1,4 @@
-.TH DIS6502 1 "1 OCT 1986"
+.TH DIS6502 1 "12 SEP 2003"
 .UC 4
 .SH NAME
 dis6502 \- Disassemble 6502 object code
@@ -15,7 +15,7 @@ dis6502 \- Disassemble 6502 object code
 .SH DESCRIPTION
 .I  Dis6502
 disassembles 6502 binary files.  Binary formats understood include
-Atari binary files (L menu command) and boot files.
+raw binary files, Atari boot and load files, and Commodore 64 files.
 Equate and control files can be included via the
 .I -p
 option to name well known locations and to control the disassembly
@@ -27,24 +27,34 @@ headers.  The dump routine then prints out the information.
 .PP
 The command line options are:
 .TP
+.I \-r
+Raw binary input file.
+.TP
 .I \-b
-Assume that the file is a boot file, not a load file.
+Atari boot format input file.
+.TP
+.I \-l
+Atari load format input file.
+.TP
+.I \-c
+Commodore format input file.
 .TP
 .I \-p \fIpfile\fP 
 Read in the predefine file \fIpfile\fP.
 Up to 20 \fI-p\fP options may be included.
+.TP
+.I \-v \fIaddress\fP
+Usa an alternate address for the reset and interrupt vectors.
 .PP
 Lines in pfile consist of:
 .PP
- lineno name .eq number
+name .eq address
 .PP
- .stop number
+ .stop address
 .PP
- .trace number
+ .trace address
 .PP 
-.I Lineno
-refers to a decimal number.  
-.I Number 
+.I Address 
 may be a decimal number or
 may be a hexadecimal number (the first character of the number
 should be "$").  For example, "$21b5" is
@@ -59,5 +69,5 @@ the trace process to continue at the address given.
 causes the
 trace process to stop at the address given.
 .SH AUTHOR
-Robert Bond
+Robert Bond, Udi Finkelstein, and Eric Smith
 .SH BUGS
