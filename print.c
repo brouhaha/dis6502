@@ -10,67 +10,22 @@
 char *strcpy();
 char *strcat();
 
-void dumpitout (void)
+
+static int has_offset (int i)
 {
-  int i;
-
-  for(i = 0; i<0x10000;) 
-    {
-      if (f[i] & LOADED) 
-	{
-	  if ((i == 0) || (! (f[i-1] & LOADED)))
-	    printf ("\t.org\t$%04x\n", i);
-
-	  if (f[i] & SREF && f[i] & ISOP)
-	    printf("\n");
-
-	  if (! asmout)
-	    {
-	      printf("%04x  ",i);
-	      print_bytes(i);
-	    }
-	  if (print_label(i))
-	    printf (":");
-	  printf ("\t");
-	  if (f[i] & ISOP)
-	    i += print_inst(i);
-	  else
-	    i += print_data(i);
-	  printf("\n");
-
-	}
-      else 
-	{
-	  if (print_label (i))
-	    {
-	      if (i <= 0xff)
-		printf ("\t.equ\t$%02x\n", i);
-	      else
-		printf ("\t.equ\t$%04x\n", i);
-	    }
-	  i++;
-	}
-    }
-
-  if (! asmout)
-    print_refs();
+  return ((i > 0) && (! (f [i] & NAMED)) &&
+	  ((f [i-1] & (NAMED | DREF)) == (NAMED | DREF)));
 }
 
-int pchar (int c)
-{
-	if (isascii(c) && isprint(c))
-		return(c);
-	return('.');
-}
 
-char *lname (int i)
+static char *lname (int i, int offset_ok)
 {
 	static char buf[20];
 	char t;
 
 	if (f[i] & NAMED) 
 		return(get_name(i));
-	if ((i > 0) && ((f[i-1] & (NAMED | DREF)) == (NAMED | DREF))) {
+	if (offset_ok && has_offset (i)) {
 		(void)strcpy(buf, get_name(i-1));
 		(void)strcat(buf, "+1");
 		return (buf);
@@ -97,15 +52,72 @@ char *lname (int i)
 	return (buf);
 }
 
-int print_label (int i)
+
+static int print_label (int i)
 {
   if (f[i] & (NAMED | JREF | SREF | DREF)) 
     {
-      printf("%s", lname(i));
+      printf("%s", lname(i, 0));
       return (1);
     }
   else
     return (0);
+}
+
+void dumpitout (void)
+{
+  int i;
+
+  for(i = 0; i<0x10000;) 
+    {
+      if (f[i] & LOADED) 
+	{
+	  if ((i == 0) || (! (f[i-1] & LOADED)))
+	    printf ("\t.org\t$%04x\n", i);
+
+	  if (f[i] & SREF && f[i] & ISOP)
+	    printf("\n");
+
+	  if (! asmout)
+	    {
+	      printf("%04x  ",i);
+	      print_bytes(i);
+	    }
+	  if (! has_offset (i))
+	    {
+	      if (print_label(i))
+		printf (":");
+	    }
+	  printf ("\t");
+	  if (f[i] & ISOP)
+	    i += print_inst(i);
+	  else
+	    i += print_data(i);
+	  printf("\n");
+
+	}
+      else 
+	{
+	  if ((! has_offset (i)) && print_label (i))
+	    {
+	      if (i <= 0xff)
+		printf ("\t.equ\t$%02x\n", i);
+	      else
+		printf ("\t.equ\t$%04x\n", i);
+	    }
+	  i++;
+	}
+    }
+
+  if (! asmout)
+    print_refs();
+}
+
+int pchar (int c)
+{
+	if (isascii(c) && isprint(c))
+		return(c);
+	return('.');
 }
 
 void print_bytes (int addr)
@@ -173,24 +185,24 @@ int print_inst(int addr)
 		case REL:
 		case ABS:
 		case ZPG:
-			printf("\t%s", lname(operand));
+			printf("\t%s", lname(operand, 1));
 			break;
 		case IND:
-			printf("\t(%s)", lname(operand));
+			printf("\t(%s)", lname(operand, 1));
 			break;
 		case ABX:
 		case ZPX:
-			printf("\t%s,X", lname(operand));
+			printf("\t%s,X", lname(operand, 1));
 			break;
 		case ABY:
 		case ZPY:
-			printf("\t%s,Y", lname(operand));
+			printf("\t%s,Y", lname(operand, 1));
 			break;
 		case INX:
-			printf("\t(%s,X)", lname(operand));
+			printf("\t(%s,X)", lname(operand, 1));
 			break;
 		case INY:
-			printf("\t(%s),Y", lname(operand));
+			printf("\t(%s),Y", lname(operand, 1));
 			break;
 		default:
 			break;
@@ -256,14 +268,14 @@ void print_refs (void)
 				break;
 			}
 
-			fprintf(fp, "%-8s  %04x   ", lname(i), i);
+			fprintf(fp, "%-8s  %04x   ", lname(i, 1), i);
 			npline = 0;
 			while (rp) {
 				fprintf(fp, "%04x ", rp->who);
 				npline++;
 				if (npline == 12) {
 					fprintf(fp,"\n");
-					fprintf(fp,"%-8s  %04x   ",lname(i),i);
+					fprintf(fp,"%-8s  %04x   ",lname(i, 1),i);
 					npline = 0;
 				}
 				rp = rp->next;
