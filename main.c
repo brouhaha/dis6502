@@ -312,32 +312,19 @@ void get_predef (void)
 			while (yylex() != '\n')
 				;
 			break;
-		case NUMBER:
-			switch (yylex()) {
-			case LI:
-			case COMMENT:
-				while (yylex() != '\n')
-					;
-				break;
-			case '\n':
-				break;
-			case NAME:
-				name = token.sval;
-				if (yylex() != EQ) 
-					crash("Only EQ and LI supported in defines file");
-				if (yylex() != NUMBER)
-					crash("EQ operand must be a number");
-				loc = token.ival;
-				if (loc > 0x10000 || loc < 0)
-					crash("Number out of range");
-				f[loc] |= NAMED;
-				save_name(loc, name); 
-				while (yylex() != '\n') 
-					;
-				break;
-			default:
-				crash("Invalid line in predef file");
-			}
+		case NAME:
+			name = token.sval;
+			if (yylex() != EQ) 
+				crash("name can only be used with equate in defines file");
+			if (yylex() != NUMBER)
+				crash("EQ operand must be a number");
+			loc = token.ival;
+			if (loc > 0x10000 || loc < 0)
+				crash("Number out of range");
+		        f[loc] |= NAMED;
+			save_name(loc, name); 
+			while (yylex() != '\n') 
+				;
 			break;
 		default:
 			crash("Invalid line in predef file");
