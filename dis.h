@@ -10,12 +10,8 @@ enum boot_mode { UNKNOWN, RAW_BINARY, ATARI_LOAD, C64_LOAD, ATARI_BOOT };
 extern int base_address, vector_address;
 
 extern int asmout;
-#ifndef AMIGA
 extern unsigned char f[];
 extern unsigned char d[];
-#else
-extern unsigned char *d,*f;
-#endif
 
 #define getword(x) (d[x] + (d[x+1] << 8))
 #define getbyte(x) (d[x])
@@ -100,3 +96,34 @@ typedef union  {
 } VALUE;
 
 extern VALUE token;
+
+
+/* in scanner generated from lex.l: */
+int yylex (void);
+
+
+/* in initopts.c: */
+void initopts (int argc, char *argv[]);
+
+/* in print.c: */
+void dumpitout (void);
+int pchar (int c);
+char *lname (int i);
+int print_label (int i);
+void print_bytes (int addr);
+int print_inst(int addr);
+int print_data (int i);
+void print_refs (void);
+
+/* in ref.c: */
+void save_ref (int refer, int refee);
+void save_name (int loc, char *name);
+
+/* in main.c: */
+void crash (char *p) __attribute__ ((noreturn));
+void get_predef (void);
+
+void loadboot (void);
+void loadfile (void);
+void c64loadfile (void);
+void binaryloadfile (void);

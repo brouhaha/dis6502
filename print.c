@@ -1,12 +1,16 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
+
+#include <sys/types.h>
+#include <unistd.h>
 
 #include "dis.h"
 
 char *strcpy();
 char *strcat();
 
-dumpitout()
+void dumpitout (void)
 {
   int i;
 
@@ -52,17 +56,14 @@ dumpitout()
     print_refs();
 }
 
-pchar(c)
-int c;
+int pchar (int c)
 {
 	if (isascii(c) && isprint(c))
 		return(c);
 	return('.');
 }
 
-char *
-lname(i)
-int i;
+char *lname (int i)
 {
 	static char buf[20];
 	char t;
@@ -96,7 +97,7 @@ int i;
 	return (buf);
 }
 
-print_label(i)
+int print_label (int i)
 {
   if (f[i] & (NAMED | JREF | SREF | DREF)) 
     {
@@ -107,8 +108,7 @@ print_label(i)
     return (0);
 }
 
-print_bytes(addr)
-int addr;
+void print_bytes (int addr)
 {
 	register struct info *ip; 
 
@@ -133,8 +133,7 @@ int addr;
 }
 		
 
-print_inst(addr)
-int addr;
+int print_inst(int addr)
 {
 	int opcode;
 	register struct info *ip; 
@@ -201,7 +200,7 @@ int addr;
 
 }
 
-print_data(i)
+int print_data (int i)
 {
 	int count;
 	int j;
@@ -233,7 +232,7 @@ print_data(i)
 	return (count);
 }
 
-print_refs()
+void print_refs (void)
 {
 	char tname[50];
 	char cmd[200];
@@ -242,13 +241,8 @@ print_refs()
 	register int i;
 	int npline;
 
-#ifndef AMIGA
 	(void)sprintf(tname, "dis.%d", getpid());
 	(void)sprintf(cmd, "sort %s; rm %s", tname, tname);
-#else
-	(void)sprintf(tname, "dis.%ld", FindTask(0L));
-	(void)sprintf(cmd, "Sort from %s to %s", tname, &tname[3] );
-#endif
 
 	fp = fopen(tname, "w");
 	if (!fp) 
@@ -285,13 +279,5 @@ print_refs()
 	printf("%-8s  Value  References\n", "Symbol");
 	(void)fflush (stdout);
 
-#ifndef AMIGA
 	(void)system(cmd);
-#else
-	(void)Execute(cmd,0L,0L);
-	(void)sprintf(cmd, "Type %s",&tname[3]);
-	(void)Execute(cmd,0L,Output());
-	DeleteFile(tname);
-	DeleteFile(&tname[3]);
-#endif
 }

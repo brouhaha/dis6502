@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "dis.h"
 
@@ -32,9 +33,7 @@ void usage (void)
   exit (1);
 }
 
-initopts(argc,argv)
-int argc;
-char *argv[];
+void initopts (int argc, char *argv[])
 {
   int ai;
   char *ca;

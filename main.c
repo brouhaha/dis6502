@@ -26,13 +26,9 @@ int jtab2_count = 0;
 
 VALUE token;
 
-#ifdef AMIGA
-unsigned char *d,*f; /* Manx has a bug preventing us from declaring arrays >64K */
-extern unsigned char *calloc();
-#else
 unsigned char d[0x10000];	 	/* The data */
 unsigned char f[0x10000];		/* Flags for memory usage */ 
-#endif
+
 
 #define RUNLOC  0x2e0
 #define INITLOC 0x2e2
@@ -43,10 +39,6 @@ void crash (char *p)
 	fprintf(stderr, "%s: %s\n", progname, p);
 	if (cur_file != NULL)
 		fprintf(stderr, "Line %d of %s\n", lineno+1, cur_file);
-#ifdef AMIGA
-free(d);
-free(f);
-#endif
 	exit(1);
 }
 
@@ -211,17 +203,8 @@ void do_jtab2 (void)
 
 
 
-main(argc, argv)
-int argc;
-char *argv[];
+int main (int argc, char *argv[])
 {
-	int i;
-
-#ifdef AMIGA
-d = calloc(0x10000,1);
-f = calloc(0x10000,1);
-#endif
-
 	initopts(argc, argv);
 	if (npredef > 0) {
 		cur_file = predef[0];
@@ -256,20 +239,11 @@ f = calloc(0x10000,1);
 
 	dumpitout();
 
-#ifdef AMIGA
-free(d);
-free(f);
-#endif
-
 	exit(0);
 }
 
 
-
-
-
-
-get_predef()
+void get_predef (void)
 {
 	int loc;
 	int size;
@@ -370,7 +344,7 @@ get_predef()
 		}
 }
 
-loadboot()
+void loadboot (void)
 {
 	struct boot_hdr {
 		unsigned char flags;
@@ -391,11 +365,6 @@ loadboot()
 	if (!fp) { 
 		fprintf(stderr, "Cant open %s\n", file);
 
-#ifdef AMIGA
-free(d);
-free(f);
-#endif
-
 		exit(1);
 	}
 
@@ -415,7 +384,7 @@ free(f);
 }
 
 
-loadfile()
+void loadfile (void)
 {
 	FILE *fp;
 	int base_addr;
@@ -429,11 +398,6 @@ loadfile()
 	cur_file = NULL;
 	if (!fp) { 
 		fprintf(stderr, "Cant open %s\n", file);
-
-#ifdef AMIGA
-free(d);
-free(f);
-#endif
 
 		exit(1);
 	}
@@ -488,7 +452,7 @@ free(f);
 }
 
 
-c64loadfile()
+void c64loadfile (void)
 {
 	FILE *fp;
 	unsigned int base_addr,i;
@@ -498,11 +462,6 @@ c64loadfile()
 	cur_file = NULL;
 	if (!fp) { 
 		fprintf(stderr, "Cant open %s\n", file);
-
-#ifdef AMIGA
-		free(d);
-		free(f);
-#endif
 
 		exit(1);
 	}
@@ -519,7 +478,7 @@ c64loadfile()
 }
 
 
-binaryloadfile()
+void binaryloadfile (void)
 {
   FILE *fp;
   unsigned int i;

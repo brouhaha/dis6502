@@ -13,10 +13,7 @@ struct hashslot {
 
 struct   hashslot hashtbl[HTSIZE];	/* the hash table */
 
-struct hashslot *
-hash(loc, allocate)
-int loc;
-int allocate;
+struct hashslot *hash (int loc, int allocate)
 {
 	int probes;
 	register struct hashslot *hp;
@@ -45,9 +42,7 @@ int allocate;
 	/*NOTREACHED*/
 }
 
-save_ref(refer, refee) 
-int refer;
-int refee;
+void save_ref (int refer, int refee) 
 {
 	struct ref_chain *rc;
 	struct hashslot *hp;
@@ -59,9 +54,7 @@ int refee;
 	hp->ref = rc;
 }
 
-save_name(loc, name)
-int loc;
-char *name;
+void save_name (int loc, char *name)
 {
 	struct hashslot *hp;
 
