@@ -1,7 +1,7 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: lex.l,v 1.5 2003/09/15 21:49:46 eric Exp $
+ * $Id: lex.l,v 1.6 2003/09/16 12:00:00 eric Exp $
  * Copyright 2001-2003 Eric Smith <eric@brouhaha.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -46,6 +46,10 @@ alphanum	[0-9a-zA-Z_]
 \.[Ee][Qq][Uu]		{ return EQ; }
 
 \.[Ee][Qq]		{ return EQ; }
+
+\.[Ee][Qq][Ss]		{ return EQS; }
+
+\.[Oo][Ff][Ss]		{ return OFS; }
 
 \.[Ll][Ii]		{ return LI; }
 

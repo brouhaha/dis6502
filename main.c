@@ -1,7 +1,7 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: main.c,v 1.7 2003/09/15 21:46:32 eric Exp $
+ * $Id: main.c,v 1.8 2003/09/16 12:00:00 eric Exp $
  * Copyright 2000-2003 Eric Smith <eric@brouhaha.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -54,6 +54,7 @@ VALUE token;
 
 unsigned char d[0x10000];	 	/* The data */
 unsigned char f[0x10000];		/* Flags for memory usage */ 
+long offset [0x10000];                  /* label offset */
 
 
 #define RUNLOC  0x2e0
@@ -300,7 +301,8 @@ int main (int argc, char *argv[])
 
 void get_predef (void)
 {
-	int loc;
+	long loc, loc2;
+	int i;
 	int size;
 	char *name;
 
@@ -369,18 +371,60 @@ void get_predef (void)
 			break;
 		case NAME:
 			name = token.sval;
-			if (yylex() != EQ) 
-				crash("name can only be used with equate in defines file");
-			if (yylex() != NUMBER)
-				crash("EQ operand must be a number");
-			loc = token.ival;
-			if (loc > 0x10000 || loc < 0)
-				crash("Number out of range");
-		        f[loc] |= NAMED;
-			save_name(loc, name); 
+			switch (yylex ())
+			  {
+			  case EQ:
+			    if (yylex() != NUMBER)
+			      crash("EQ operand must be a number");
+			    loc = token.ival;
+			    if (loc > 0x10000 || loc < 0)
+			      crash("Number out of range");
+			    f[loc] |= NAMED;
+			    save_name(loc, name); 
+			    break;
+			  case EQS:
+			    if (yylex() != NUMBER)
+			      crash("EQS operand must be a number");
+			    loc = token.ival;
+			    if (loc > 0x10000 || loc < 0)
+			      crash("Number out of range");
+			    if (yylex() != ',')
+			      crash(".eqs needs a comma");
+			    if (yylex() != NUMBER)
+			      crash("EQS operand must be a number");
+			    size = token.ival;
+			    f[loc] |= NAMED;
+			    save_name(loc, name);
+			    for (i = 1; i < size; i++)
+			      {
+				f [loc + i] |= OFFSET;
+				offset [loc + i] = -i;
+			      }
+			    break;
+			  default:
+			    crash("name can only be used with equate in defines file");
+			    break;
+			  }
 			while (yylex() != '\n') 
-				;
+			  ;
 			break;
+		case OFS:
+		  if (yylex() != NUMBER)
+		    crash("EQ operand must be a number");
+		  loc = token.ival;
+		  if (loc > 0x10000 || loc < 0)
+		    crash("Number out of range");
+		  if (yylex() != ',')
+		    crash(".ofs needs a comma");
+		  if (yylex() != NUMBER)
+		    crash("EQ operand must be a number");
+		  loc2 = token.ival;
+		  if (loc2 > 0x10000 || loc2 < 0)
+		    crash("Number out of range");
+		  /*$$$*/
+		  f[loc] |= OFFSET;
+		  offset[loc] = loc2 - loc;
+		  break;
 		default:
 			crash("Invalid line in predef file");
 		}

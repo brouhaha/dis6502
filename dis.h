@@ -1,7 +1,7 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: dis.h,v 1.5 2003/09/15 21:46:32 eric Exp $
+ * $Id: dis.h,v 1.6 2003/09/16 12:00:00 eric Exp $
  * Copyright 2000-2003 Eric Smith <eric@brouhaha.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -40,6 +40,7 @@ extern int base_address, vector_address;
 extern int asmout;
 extern unsigned char f[];
 extern unsigned char d[];
+extern long offset[];
 
 #define getword(x) (d[x] + (d[x+1] << 8))
 #define getbyte(x) (d[x])
@@ -53,6 +54,7 @@ extern unsigned char d[];
 #define NAMED  0x10			/* Has a name */
 #define TDONE  0x20			/* Has been traced */
 #define ISOP   0x40			/* Is a valid instruction opcode */
+#define OFFSET 0x80                     /* should be printed as an offset */
 
 struct info {
 	char opn[4];
@@ -111,6 +113,8 @@ char *get_name(addr_t loc);
 #define TSTOP 262
 #define TRTSTAB 263
 #define TJTAB2 264
+#define EQS 265
+#define OFS 266
 
 extern FILE *yyin, *yyout;
 int lineno;

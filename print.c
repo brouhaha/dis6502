@@ -1,7 +1,7 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: print.c,v 1.7 2003/09/15 21:46:32 eric Exp $
+ * $Id: print.c,v 1.8 2003/09/16 12:00:00 eric Exp $
  * Copyright 2000-2003 Eric Smith <eric@brouhaha.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <ctype.h>
 
 #include <sys/types.h>
@@ -35,13 +36,6 @@ char *strcpy();
 char *strcat();
 
 
-static int has_offset (addr_t i)
-{
-  return ((i > 0) && (! (f [i] & NAMED)) &&
-	  ((f [i-1] & (NAMED | DREF)) == (NAMED | DREF)));
-}
-
-
 static char *lname (addr_t i, int offset_ok)
 {
 	static char buf[20];
@@ -49,9 +43,11 @@ static char *lname (addr_t i, int offset_ok)
 
 	if (f[i] & NAMED) 
 		return(get_name(i));
-	if (offset_ok && has_offset (i)) {
-		(void)strcpy(buf, get_name(i-1));
-		(void)strcat(buf, "+1");
+	if (f[i] & OFFSET) {
+		(void)strcpy(buf, get_name(i+offset[i]));
+		sprintf (buf + strlen (buf), "%c%ld",
+			 (offset [i] <= 0) ? '+' : '-',
+			 labs (offset [i]));
 		return (buf);
 	}
 	if (f[i] & SREF)
@@ -79,7 +75,8 @@ static char *lname (addr_t i, int offset_ok)
 
 static int print_label (addr_t i)
 {
-  if (f[i] & (NAMED | JREF | SREF | DREF)) 
+  if ((f[i] & (NAMED | JREF | SREF | DREF)) &&
+      ! (f [i] & OFFSET))
     {
       printf("%s", lname(i, 0));
       return (1);
@@ -107,11 +104,8 @@ void dumpitout (void)
 	      printf("%04x  ",i);
 	      print_bytes(i);
 	    }
-	  if (! has_offset (i))
-	    {
-	      if (print_label(i))
-		printf (":");
-	    }
+	  if (print_label(i))
+	    printf (":");
 	  printf ("\t");
 	  if (f[i] & ISOP)
 	    i += print_inst(i);
@@ -122,7 +116,7 @@ void dumpitout (void)
 	}
       else 
 	{
-	  if ((! has_offset (i)) && print_label (i))
+	  if (print_label (i))
 	    {
 	      if (i <= 0xff)
 		printf ("\t.equ\t$%02x\n", i);
