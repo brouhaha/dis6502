@@ -28,6 +28,8 @@ alphanum	[0-9a-zA-Z_]
 
 \.[Rr][Tt][Ss][Tt][Aa][Bb]	{ return TRTSTAB; }
 
+\.[Jj][Tt][Aa][Bb]2	{ return TJTAB2; }
+
 {digit}+		{
 			  (void)sscanf(yytext, "%d", &token.ival); 
 			  return NUMBER;
