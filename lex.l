@@ -1,9 +1,12 @@
 %{
 #undef ECHO
+#include <string.h>
 #include "dis.h"
 int lineno = 0;
 char *strcpy();
 %}
+
+%option nounput
 
 digit		[0-9]
 hexdigit	[0-9a-fA-F]
