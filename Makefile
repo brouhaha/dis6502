@@ -1,7 +1,7 @@
 # dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
 # Makefile
-# $Id: Makefile,v 1.4 2003/09/13 00:54:33 eric Exp $
-# Copyright 2000, 2003 Eric Smith
+# $Id: Makefile,v 1.5 2003/09/15 21:49:25 eric Exp $
+# Copyright 2000-2003 Eric Smith
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -56,7 +56,7 @@ endif
 # let me know why so I can improve this Makefile.
 # -----------------------------------------------------------------------------
 
-VERSION = 0.1
+VERSION = 0.2
 
 PACKAGE = dis6502
 
