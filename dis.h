@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #define NPREDEF 10
 
 extern char *predef[];
@@ -88,6 +86,7 @@ char *get_name();
 #define TSTART 261
 #define TSTOP 262
 #define TRTSTAB 263
+#define TJTAB2 264
 
 extern FILE *yyin, *yyout;
 int lineno;

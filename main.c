@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "dis.h"
 
 #define NTSTART 500
@@ -8,11 +11,18 @@ int  pre_index = 0;
 int  tstart[NTSTART];			/* .trace directive keep locations */
 int  tstarti = 0;
 
-#define RTSTAB 50
+#define RTSTAB_MAX 50
 
-int rtstab_addr [RTSTAB];		/* .rtstab directive */
-int rtstab_size [RTSTAB];
+int rtstab_addr [RTSTAB_MAX];		/* .rtstab directive */
+int rtstab_size [RTSTAB_MAX];
 int rtstab_count = 0;
+
+#define JTAB2_MAX 50
+
+int jtab2_addr_low  [JTAB2_MAX];	/* .jtab2 directive */
+int jtab2_addr_high [JTAB2_MAX];	/* .jtab2 directive */
+int jtab2_size      [JTAB2_MAX];
+int jtab2_count = 0;
 
 VALUE token;
 
@@ -27,6 +37,128 @@ unsigned char f[0x10000];		/* Flags for memory usage */
 #define RUNLOC  0x2e0
 #define INITLOC 0x2e2
 
+
+void crash (char *p)
+{
+	fprintf(stderr, "%s: %s\n", progname, p);
+	if (cur_file != NULL)
+		fprintf(stderr, "Line %d of %s\n", lineno+1, cur_file);
+#ifdef AMIGA
+free(d);
+free(f);
+#endif
+	exit(1);
+}
+
+void trace (unsigned int addr)
+{
+	int opcode;
+	register struct info *ip; 
+	int operand;
+	int istart;
+
+	if (f[addr] & TDONE)
+		return;
+	else 
+		f[addr] |= TDONE;
+
+	istart = addr;
+	opcode = getbyte(addr);
+	ip = &optbl[opcode];
+
+	if (ip->flag & ILL)
+		return;
+
+	f[addr] |= ISOP;
+
+	addr++;
+
+	/* Get the operand */
+
+	switch(ip->nb) {
+		case 1:
+			break;
+		case 2:
+			operand = getbyte(addr);
+			f[addr++] |= TDONE;
+			break;
+		case 3:
+			operand = getword(addr);
+			f[addr++] |= TDONE;
+			f[addr++] |= TDONE;
+			break;
+	}
+
+	/* Mark data references */
+
+	switch (ip->flag & ADRMASK) {
+		case IMM:
+		case ACC:
+		case IMP:
+		case REL:
+		case IND:
+			break;
+		case ABS:
+			if (ip->flag & (JUMP | FORK))
+				break;
+			/* Fall into */
+		case ABX:
+		case ABY:
+		case INX:
+		case INY:
+		case ZPG:
+		case ZPX:
+		case ZPY:
+			f[operand] |= DREF;
+			save_ref(istart, operand);
+			break;
+		default:
+			crash("Optable error");
+			break;
+	}
+
+	/* Trace the next instruction */
+
+	switch (ip->flag & CTLMASK) {
+		case NORM:
+			trace(addr);
+			break;
+		case JUMP:
+			f[operand] |= JREF;
+			save_ref(istart, operand);
+			trace(operand);
+			break;
+		case FORK:
+			if (ip->flag & REL) {
+				if (operand > 127) 
+					operand = (~0xff | operand);
+				operand = operand + addr;
+				f[operand] |= JREF;
+			} else {
+				f[operand] |= SREF;
+			}
+			save_ref(istart, operand);
+			trace(operand);
+			trace(addr);
+			break;
+		case STOP:
+			break;
+		default:
+			crash("Optable error");
+			break;
+	}
+}
+
+void start_trace (unsigned int loc, char *name)
+{
+	fprintf(stderr, "Trace: %4x %s\n", loc, name);
+	f[loc] |= (NAMED | SREF);
+	if (!get_name(loc))
+		save_name(loc, name);
+	save_ref(0, loc);
+	trace(loc);
+}
+	
 
 void do_ptrace (void)
 {
@@ -57,6 +189,24 @@ void do_rtstab (void)
 	  loc += 2;
 	}
     }
+}
+
+void do_jtab2 (void)
+{
+  int i, j;
+  int loc_l, loc_h, code;
+  for (i = 0; i < jtab2_count; i++)
+    {
+      loc_l = jtab2_addr_low [i];
+      loc_h = jtab2_addr_high [i];
+      for (j = 0; j < jtab2_size [i]; j++)
+	{
+	  char *trace_sym = (char *) malloc (6);
+	  code = d [loc_l + j] + (d [loc_h + j] << 8);
+	  sprintf (trace_sym, "T%04x", code);
+	  start_trace (code, trace_sym);
+	}
+    } 
 }
 
 
@@ -102,6 +252,7 @@ f = calloc(0x10000,1);
 
 	do_ptrace ();
 	do_rtstab ();
+	do_jtab2 ();
 
 	dumpitout();
 
@@ -117,19 +268,6 @@ free(f);
 
 
 
-
-crash(p)
-char *p;
-{
-	fprintf(stderr, "%s: %s\n", progname, p);
-	if (cur_file != NULL)
-		fprintf(stderr, "Line %d of %s\n", lineno+1, cur_file);
-#ifdef AMIGA
-free(d);
-free(f);
-#endif
-	exit(1);
-}
 
 get_predef()
 {
@@ -158,6 +296,25 @@ get_predef()
 		  size = token.ival;
 		  rtstab_addr [rtstab_count] = loc;
 		  rtstab_size [rtstab_count++] = size;
+		  break;
+		case TJTAB2:
+		  if (yylex() != NUMBER)
+		    crash(".jtab2 needs a number operand");
+		  if (token.ival > 0x10000 || token.ival < 0)
+		    crash("Number out of range");
+		  jtab2_addr_low [jtab2_count] = token.ival;
+		  if (yylex() != ',')
+		    crash(".jtab2 needs a comma");
+		  if (yylex() != NUMBER)
+		    crash(".jtab2 needs a number operand");
+		  if (token.ival > 0x10000 || token.ival < 0)
+		    crash("Number out of range");
+		  jtab2_addr_high [jtab2_count] = token.ival;
+		  if (yylex() != ',')
+		    crash(".jtab2 needs a comma");
+		  if (yylex() != NUMBER)
+		    crash(".jtab2 needs a number operand");
+		  jtab2_size [jtab2_count++] = token.ival;
 		  break;
 		case TSTART:
 			if (yylex() != NUMBER) 
@@ -396,118 +553,6 @@ binaryloadfile()
   start_trace ((d [reset+1] << 8) | d [reset], "RESET");
   start_trace ((d [irq  +1] << 8) | d [irq  ], "IRQ");
   start_trace ((d [nmi  +1] << 8) | d [nmi  ], "NMI");
-}
-
-start_trace(loc, name)
-unsigned int loc;
-char *name;
-{
-	fprintf(stderr, "Trace: %4x %s\n", loc, name);
-	f[loc] |= (NAMED | SREF);
-	if (!get_name(loc))
-		save_name(loc, name);
-	save_ref(0, loc);
-	trace(loc);
-}
-	
-trace(addr)
-register unsigned int addr;
-{
-	int opcode;
-	register struct info *ip; 
-	int operand;
-	int istart;
-
-	if (f[addr] & TDONE)
-		return;
-	else 
-		f[addr] |= TDONE;
-
-	istart = addr;
-	opcode = getbyte(addr);
-	ip = &optbl[opcode];
-
-	if (ip->flag & ILL)
-		return;
-
-	f[addr] |= ISOP;
-
-	addr++;
-
-	/* Get the operand */
-
-	switch(ip->nb) {
-		case 1:
-			break;
-		case 2:
-			operand = getbyte(addr);
-			f[addr++] |= TDONE;
-			break;
-		case 3:
-			operand = getword(addr);
-			f[addr++] |= TDONE;
-			f[addr++] |= TDONE;
-			break;
-	}
-
-	/* Mark data references */
-
-	switch (ip->flag & ADRMASK) {
-		case IMM:
-		case ACC:
-		case IMP:
-		case REL:
-		case IND:
-			break;
-		case ABS:
-			if (ip->flag & (JUMP | FORK))
-				break;
-			/* Fall into */
-		case ABX:
-		case ABY:
-		case INX:
-		case INY:
-		case ZPG:
-		case ZPX:
-		case ZPY:
-			f[operand] |= DREF;
-			save_ref(istart, operand);
-			break;
-		default:
-			crash("Optable error");
-			break;
-	}
-
-	/* Trace the next instruction */
-
-	switch (ip->flag & CTLMASK) {
-		case NORM:
-			trace(addr);
-			break;
-		case JUMP:
-			f[operand] |= JREF;
-			save_ref(istart, operand);
-			trace(operand);
-			break;
-		case FORK:
-			if (ip->flag & REL) {
-				if (operand > 127) 
-					operand = (~0xff | operand);
-				operand = operand + addr;
-				f[operand] |= JREF;
-			} else {
-				f[operand] |= SREF;
-			}
-			save_ref(istart, operand);
-			trace(operand);
-			trace(addr);
-			break;
-		case STOP:
-			break;
-		default:
-			crash("Optable error");
-			break;
-	}
 }
 
 int

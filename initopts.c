@@ -1,10 +1,11 @@
-
 /* 
  * 
  *  dis [-p predefineds] file
  *
  *  The -p option may be repeated.
  */
+
+#include <stdio.h>
 
 #include "dis.h"
 
@@ -26,7 +27,7 @@ void usage (void)
 	           "            -c             Commodore 64\n"
                    "  options:  -a             assembly output\n"
                    "            -p <file>      predefs\n"
-	           "            -v <address>   alternate vector address",
+	           "            -v <address>   alternate vector address\n",
 	   progname);
   exit (1);
 }

@@ -1,4 +1,6 @@
+#include <stdio.h>
 #include <ctype.h>
+
 #include "dis.h"
 
 char *strcpy();

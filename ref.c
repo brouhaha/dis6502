@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 #include "dis.h"
 
 #define HTSIZE 0x1000			/* Power of 2 */
