@@ -1,44 +1,121 @@
-OBJS = main.o initopts.o lex.o ref.o print.o tbl.o trace_queue.o
-SRCS = dis.h main.c initopts.c lex.l ref.c print.c tbl.c trace_queue.c
-CFLAGS = -g -Wall
+# dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
+# Makefile
+# $Id: Makefile,v 1.4 2003/09/13 00:54:33 eric Exp $
+# Copyright 2000, 2003 Eric Smith
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License version 2 as
+# published by the Free Software Foundation.  Note that permission is
+# not granted to redistribute this program under the terms of any
+# other version of the General Public License.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111  USA
 
-dis6502:	$(OBJS)
-		cc $(OBJS) -o dis6502
 
-tbl.o:		dis.h tbl.c
-#		cc -c tbl.c
+INSTDIR = /usr/local
 
-initopts.o:	dis.h initopts.c
 
-main.o:		dis.h main.c
+# Conditionals:  uncomment the following defines as nessary.  Note that a
+# "0" value is considered true by make, so to disable conditionals comment
+# them out or set them to a null string.
 
-lex.o:		lex.c
+DEBUG=1
+#EFENCE=1
+#STATIC=1
 
-lex.c:		dis.h lex.l
 
-ref.o:		dis.h ref.c
+CFLAGS = -Wall
+LDFLAGS =
+LDLIBS =
 
-print.o:	dis.h print.c
+ifdef DEBUG
+CFLAGS := $(CFLAGS) -g
+LDFLAGS := $(LDFLAGS) -g
+else
+CFLAGS := $(CFLAGS) -O3
+endif
 
-trace_queue.o:	dis.h trace_queue.c
+ifdef EFENCE
+LDLIBS := $(LDLIBS) -lefence -lpthread
+endif
 
-dis.man:	dis.1
-		nroff -man dis.1 > dis.man
+ifdef STATIC
+LDLIBS := -Wl,-static $(LDLIBS)
+endif
 
-install:	dis
-		cp dis /a/rgb/bin/dis6502
+
+# -----------------------------------------------------------------------------
+# You shouldn't have to change anything below this point, but if you do please
+# let me know why so I can improve this Makefile.
+# -----------------------------------------------------------------------------
+
+VERSION = 0.1
+
+PACKAGE = dis6502
+
+TARGETS = dis6502
+
+CSRCS = main.c initopts.c ref.c print.c tbl.c trace_queue.c
+LSRCS = lex.l
+HDRS = dis.h
+MAN = dis6502.1
+MISC = COPYING README README.Bond README.Finkelstein Makefile
+
+DISTFILES = $(MISC) $(HDRS) $(CSRCS) $(LSRCS)
+DISTNAME = $(PACKAGE)-$(VERSION)
+
+BIN_DISTFILES = COPYING README $(TARGETS)
+
+
+AUTO_CSRCS = lex.c $(LSRCS:.l=.c)
+
+ALL_CSRCS = $(CSRCS) $(AUTO_CSRCS)
+
+OBJS = $(ALL_CSRCS:.c=.o)
+
+
+all: $(TARGETS)
+
+
+dist: $(DISTFILES)
+	-rm -rf $(DISTNAME)
+	mkdir $(DISTNAME)
+	for f in $(DISTFILES); do ln $$f $(DISTNAME)/$$f; done
+	tar --gzip -chf $(DISTNAME).tar.gz $(DISTNAME)
+	-rm -rf $(DISTNAME)
+
 
 clean:
-		rm -f $(OBJS) lex.c dis.man
+	rm -f $(OBJS) $(AUTO_CSRCS)
 
-clobber:	clean
-		rm -f dis6502
 
-ckpt:		$(SRCS)
-		ci -l $(SRCS)
+dis6502:	$(OBJS)
+	$(LINK.o) $^ $(LOADLIBES) $(LDLIBS) -o $@
+ifndef DEBUG
+	strip $@
+endif
 
-lint: dis.h main.c initopts.c lex.c ref.c print.c tbl.c 
-		lint  dis.h main.c initopts.c lex.c ref.c print.c tbl.c 
 
-# shar:		Makefile dis.1 $(SRCS)
-# 		shar -f shar Makefile dis.1 $(SRCS)
+install:	$(TARGETS) $(MAN)
+	install $(TARGETS) $(INSTDIR)/bin/
+	install $(MAN) $(INSTDIR)/man/man1/
+
+
+
+
+DEPENDS = $(ALL_CSRCS:.c=.d)
+
+%.d: %.c
+	$(CC) -M -MG $(CFLAGS) $< | sed -e 's@ /[^ ]*@@g' -e 's@^\(.*\)\.o:@\1.d \1.o:@' > $@
+
+-include $(DEPENDS)
+
+
+
