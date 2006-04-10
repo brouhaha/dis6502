@@ -1,7 +1,7 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: lex.l,v 1.6 2003/09/16 12:00:00 eric Exp $
+ * $Id$
  * Copyright 2001-2003 Eric Smith <eric@brouhaha.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,10 +24,10 @@
 %{
 #undef ECHO
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include "dis.h"
 int lineno = 0;
-char *strcpy();
 %}
 
 %option nounput
@@ -91,7 +91,7 @@ char *
 emalloc(n)
 unsigned n;
 {
-	char *ptr, *malloc();
+	char *ptr;
 
 	if ((ptr = malloc(n)) == (char *) 0) {
 		(void) fprintf(stderr,"out of core");
