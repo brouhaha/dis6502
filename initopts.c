@@ -30,7 +30,7 @@ void usage (void)
                    "  options:  -a             assembly output\n"
                    "            -p <file>      predefs\n"
 	           "            -v <address>   alternate vector address\n"
-	   	   "            -7             mask character data to 7-bit",
+	   	   "            -7             mask character data to 7-bit\n",
 	   progname);
   exit (1);
 }
