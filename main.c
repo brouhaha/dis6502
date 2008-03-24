@@ -1,8 +1,8 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: main.c,v 1.8 2003/09/16 12:00:00 eric Exp $
- * Copyright 2000-2003 Eric Smith <eric@brouhaha.com>
+ * $Id$
+ * Copyright 2000-2003, 2008 Eric Smith <eric@brouhaha.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -49,6 +49,12 @@ int jtab2_addr_low  [JTAB2_MAX];	/* .jtab2 directive */
 int jtab2_addr_high [JTAB2_MAX];	/* .jtab2 directive */
 int jtab2_size      [JTAB2_MAX];
 int jtab2_count = 0;
+
+#define JTAB_MAX 50
+int jtab_addr  [JTAB_MAX];	/* .jtab directive */
+int jtab_addr  [JTAB_MAX];
+int jtab_size  [JTAB_MAX];
+int jtab_count = 0;
 
 VALUE token;
 
@@ -252,6 +258,23 @@ void do_jtab2 (void)
     } 
 }
 
+void do_jtab (void)
+{
+  int i, j;
+  int loc, code;
+  for (i = 0; i < jtab_count; i++)
+    {
+      loc = jtab_addr [i];
+      for (j = 0; j < jtab_size [i]; j+=2)
+	{
+	  char *trace_sym = (char *) malloc (6);
+	  code = d [loc + j] + (d [loc + j + 1] << 8);
+	  sprintf (trace_sym, "T%04x", code);
+	  start_trace (code, trace_sym);
+	}
+    } 
+}
+
 
 
 int main (int argc, char *argv[])
@@ -290,6 +313,7 @@ int main (int argc, char *argv[])
 	do_ptrace ();
 	do_rtstab ();
 	do_jtab2 ();
+	do_jtab ();
 
 	trace_all ();
 
@@ -346,6 +370,18 @@ void get_predef (void)
 		  if (yylex() != NUMBER)
 		    crash(".jtab2 needs a number operand");
 		  jtab2_size [jtab2_count++] = token.ival;
+		  break;
+		case TJTAB:
+		  if (yylex() != NUMBER)
+		    crash(".jtab needs a number operand");
+		  if (token.ival > 0x10000 || token.ival < 0)
+		    crash("Number out of range");
+		  jtab_addr [jtab_count] = token.ival;
+		  if (yylex() != ',')
+		    crash(".jtab needs a comma");
+		  if (yylex() != NUMBER)
+		    crash(".jtab2 needs a number operand");
+		  jtab_size [jtab_count++] = token.ival;
 		  break;
 		case TSTART:
 			if (yylex() != NUMBER) 

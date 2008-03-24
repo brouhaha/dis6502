@@ -1,7 +1,7 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: dis.h,v 1.6 2003/09/16 12:00:00 eric Exp $
+ * $Id$
  * Copyright 2000-2003 Eric Smith <eric@brouhaha.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -115,6 +115,7 @@ char *get_name(addr_t loc);
 #define TJTAB2 264
 #define EQS 265
 #define OFS 266
+#define TJTAB 267
 
 extern FILE *yyin, *yyout;
 int lineno;

@@ -2,7 +2,7 @@
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
  * $Id$
- * Copyright 2001-2003 Eric Smith <eric@brouhaha.com>
+ * Copyright 2001-2003, 2008 Eric Smith <eric@brouhaha.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -60,6 +60,8 @@ alphanum	[0-9a-zA-Z_]
 \.[Rr][Tt][Ss][Tt][Aa][Bb]	{ return TRTSTAB; }
 
 \.[Jj][Tt][Aa][Bb]2	{ return TJTAB2; }
+
+\.[Jj][Tt][Aa][Bb]	{ return TJTAB; }
 
 {digit}+		{
 			  (void)sscanf(yytext, "%d", &token.ival); 
