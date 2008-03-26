@@ -54,6 +54,7 @@ int jtab2_count = 0;
 int jtab_addr  [JTAB_MAX];	/* .jtab directive */
 int jtab_addr  [JTAB_MAX];
 int jtab_size  [JTAB_MAX];
+int jtab_offset [JTAB_MAX];
 int jtab_count = 0;
 
 VALUE token;
@@ -268,7 +269,7 @@ void do_jtab (void)
       for (j = 0; j < jtab_size [i]; j+=2)
 	{
 	  char *trace_sym = (char *) malloc (6);
-	  code = d [loc + j] + (d [loc + j + 1] << 8);
+	  code = (d [loc + j] + (d [loc + j + 1] << 8)) - jtab_offset [i];
 	  sprintf (trace_sym, "T%04x", code);
 	  start_trace (code, trace_sym);
 	}
@@ -381,7 +382,12 @@ void get_predef (void)
 		    crash(".jtab needs a comma");
 		  if (yylex() != NUMBER)
 		    crash(".jtab2 needs a number operand");
-		  jtab_size [jtab_count++] = token.ival;
+		  jtab_size [jtab_count] = token.ival;
+		  if (yylex() != ',')
+		    crash(".jtab needs a comma");
+		  if (yylex() != NUMBER)
+		    crash(".jtab2 needs a number operand");
+		  jtab_offset [jtab_count++] = token.ival;
 		  break;
 		case TSTART:
 			if (yylex() != NUMBER) 
