@@ -1,8 +1,8 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id$
- * Copyright 2000-2003, 2008 Eric Smith <eric@brouhaha.com>
+ * $Id: main.c 26 2004-01-17 23:28:23Z eric $
+ * Copyright 2000-2016 Eric Smith <eric@brouhaha.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "dis.h"
 
@@ -49,13 +50,6 @@ int jtab2_addr_low  [JTAB2_MAX];	/* .jtab2 directive */
 int jtab2_addr_high [JTAB2_MAX];	/* .jtab2 directive */
 int jtab2_size      [JTAB2_MAX];
 int jtab2_count = 0;
-
-#define JTAB_MAX 50
-int jtab_addr  [JTAB_MAX];	/* .jtab directive */
-int jtab_addr  [JTAB_MAX];
-int jtab_size  [JTAB_MAX];
-int jtab_offset [JTAB_MAX];
-int jtab_count = 0;
 
 VALUE token;
 
@@ -103,7 +97,7 @@ void trace_inst (addr_t addr)
       opcode = getbyte(addr);
       ip = &optbl[opcode];
 
-      if (ip->flag & ILL)
+      if (! (ip->flag & ADRMASK))  // illegal if no address mode
 	return;
 
       f[addr] |= ISOP;
@@ -137,6 +131,7 @@ void trace_inst (addr_t addr)
 	case IMP:
 	case REL:
 	case IND:
+	case INZ:
 	  break;
 	case ABS:
 	  if (ip->flag & (JUMP | FORK))
@@ -161,9 +156,13 @@ void trace_inst (addr_t addr)
 
       switch (ip->flag & CTLMASK)
 	{
-	case NORM:
-	  break;
 	case JUMP:
+	  if (ip->flag & REL) 
+	    {
+	      if (operand > 127) 
+		operand = (~0xff | operand);
+	      operand = operand + addr;
+	    }
 	  f[operand] |= JREF;
 	  save_ref(istart, operand);
 	  add_trace(operand);
@@ -186,7 +185,7 @@ void trace_inst (addr_t addr)
 	case STOP:
 	  return;
 	default:
-	  crash("Optable error");
+	  break;
 	}
     }
 }
@@ -259,23 +258,6 @@ void do_jtab2 (void)
     } 
 }
 
-void do_jtab (void)
-{
-  int i, j;
-  int loc, code;
-  for (i = 0; i < jtab_count; i++)
-    {
-      loc = jtab_addr [i];
-      for (j = 0; j < jtab_size [i]; j+=2)
-	{
-	  char *trace_sym = (char *) malloc (6);
-	  code = (d [loc + j] + (d [loc + j + 1] << 8)) - jtab_offset [i];
-	  sprintf (trace_sym, "T%04x", code);
-	  start_trace (code, trace_sym);
-	}
-    } 
-}
-
 
 
 int main (int argc, char *argv[])
@@ -314,7 +296,6 @@ int main (int argc, char *argv[])
 	do_ptrace ();
 	do_rtstab ();
 	do_jtab2 ();
-	do_jtab ();
 
 	trace_all ();
 
@@ -371,23 +352,6 @@ void get_predef (void)
 		  if (yylex() != NUMBER)
 		    crash(".jtab2 needs a number operand");
 		  jtab2_size [jtab2_count++] = token.ival;
-		  break;
-		case TJTAB:
-		  if (yylex() != NUMBER)
-		    crash(".jtab needs a number operand");
-		  if (token.ival > 0x10000 || token.ival < 0)
-		    crash("Number out of range");
-		  jtab_addr [jtab_count] = token.ival;
-		  if (yylex() != ',')
-		    crash(".jtab needs a comma");
-		  if (yylex() != NUMBER)
-		    crash(".jtab2 needs a number operand");
-		  jtab_size [jtab_count] = token.ival;
-		  if (yylex() != ',')
-		    crash(".jtab needs a comma");
-		  if (yylex() != NUMBER)
-		    crash(".jtab2 needs a number operand");
-		  jtab_offset [jtab_count++] = token.ival;
 		  break;
 		case TSTART:
 			if (yylex() != NUMBER) 
@@ -637,9 +601,23 @@ void binaryloadfile (void)
 
   fprintf (stderr, "base: %04x  reset: %04x  irq: %04x  nmi: %04x\n", base_address, reset, irq, nmi);
 
-  start_trace ((d [reset+1] << 8) | d [reset], "RESET");
-  start_trace ((d [irq  +1] << 8) | d [irq  ], "IRQ");
-  start_trace ((d [nmi  +1] << 8) | d [nmi  ], "NMI");
+  if (entry_count)
+    {
+      int i;
+      char label [8];
+      for (i = 0; i < entry_count; i++)
+	{
+	  snprintf (label, sizeof (label), "e_%04x", entry_address[i]);
+	  printf("label: %s\n", label);
+	  start_trace (entry_address[i], label);
+	}
+    }
+  else
+    {
+      start_trace ((d [reset+1] << 8) | d [reset], "RESET");
+      start_trace ((d [irq  +1] << 8) | d [irq  ], "IRQ");
+      start_trace ((d [nmi  +1] << 8) | d [nmi  ], "NMI");
+    }
 }
 
 int

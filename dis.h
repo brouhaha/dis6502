@@ -1,8 +1,8 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id$
- * Copyright 2000-2003 Eric Smith <eric@brouhaha.com>
+ * $Id: dis.h 26 2004-01-17 23:28:23Z eric $
+ * Copyright 2000-2016 Eric Smith <spacewar@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -37,6 +37,10 @@ extern int  bopt;
 enum boot_mode { UNKNOWN, RAW_BINARY, ATARI_LOAD, C64_LOAD, ATARI_BOOT };
 extern int base_address, vector_address;
 
+#define MAX_ENTRY 100
+extern int entry_count;
+extern int entry_address[MAX_ENTRY];
+
 extern int asmout;
 extern unsigned char f[];
 extern unsigned char d[];
@@ -57,7 +61,7 @@ extern long offset[];
 #define OFFSET 0x80                     /* should be printed as an offset */
 
 struct info {
-	char opn[4];
+	char *opn;
 	int  nb;
 	int  flag;
 };
@@ -68,12 +72,11 @@ extern struct info optbl[];
 
 /* Where control goes */
 
-#define NORM 1
 #define JUMP 2
 #define FORK 4
 #define STOP 8
 
-#define CTLMASK (NORM|JUMP|FORK|STOP)
+#define CTLMASK (JUMP|FORK|STOP)
 
 /* Instruction format */
 
@@ -90,9 +93,9 @@ extern struct info optbl[];
 #define IND  0x8000
 #define ZPY  0x10000
 #define ZPG  0x20000
-#define ILL  0x40000
+#define INZ  0x40000
 
-#define ADRMASK (IMM|ABS|ACC|IMP|INX|INY|ZPX|ABX|ABY|REL|IND|ZPY|ZPG|ILL)
+#define ADRMASK (IMM|ABS|ACC|IMP|INX|INY|ZPX|ABX|ABY|REL|IND|ZPY|ZPG|INZ)
 
 struct ref_chain {
 	struct ref_chain *next;
@@ -115,7 +118,6 @@ char *get_name(addr_t loc);
 #define TJTAB2 264
 #define EQS 265
 #define OFS 266
-#define TJTAB 267
 
 extern FILE *yyin, *yyout;
 int lineno;

@@ -1,8 +1,8 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id$
- * Copyright 2001-2003, 2008 Eric Smith <eric@brouhaha.com>
+ * $Id: lex.l 26 2004-01-17 23:28:23Z eric $
+ * Copyright 2001-2014 Eric Smith <eric@brouhaha.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -28,6 +28,7 @@
 #include <string.h>
 #include "dis.h"
 int lineno = 0;
+char *strcpy();
 %}
 
 %option nounput
@@ -60,13 +61,6 @@ alphanum	[0-9a-zA-Z_]
 \.[Rr][Tt][Ss][Tt][Aa][Bb]	{ return TRTSTAB; }
 
 \.[Jj][Tt][Aa][Bb]2	{ return TJTAB2; }
-
-\.[Jj][Tt][Aa][Bb]	{ return TJTAB; }
-
-\-{digit}+		{
-			  (void)sscanf(yytext, "%d", &token.ival); 
-			  return NUMBER;
-			}
 
 {digit}+		{
 			  (void)sscanf(yytext, "%d", &token.ival); 

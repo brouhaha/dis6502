@@ -1,8 +1,8 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: print.c,v 1.8 2003/09/16 12:00:00 eric Exp $
- * Copyright 2000-2003 Eric Smith <eric@brouhaha.com>
+ * $Id: print.c 26 2004-01-17 23:28:23Z eric $
+ * Copyright 2000-2014 Eric Smith <eric@brouhaha.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -210,6 +210,7 @@ int print_inst(addr_t addr)
 			printf("\t%s", lname(operand, 1));
 			break;
 		case IND:
+		case INZ:
 			printf("\t(%s)", lname(operand, 1));
 			break;
 		case ABX:

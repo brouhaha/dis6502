@@ -16,8 +16,14 @@ int  npredef = 0;
 char *file;
 char *progname = "dis";
 int  bopt = UNKNOWN;
+
 int base_address = 0;
+
 int vector_address = 0x10000;
+
+int entry_count = 0;
+int entry_address[MAX_ENTRY];
+
 int asmout = 0;
 
 void usage (void)
@@ -29,8 +35,9 @@ void usage (void)
 	           "            -c             Commodore 64\n"
                    "  options:  -a             assembly output\n"
                    "            -p <file>      predefs\n"
+	           "            -e <address>   alternate entry point address\n"
 	           "            -v <address>   alternate vector address\n"
-	   	   "            -7             mask character data to 7-bit\n",
+	   	   "            -7             mask character data to 7-bit",
 	   progname);
   exit (1);
 }
@@ -65,6 +72,12 @@ void initopts (int argc, char *argv[])
 		if (*p)
 		  crash ("base address must be specified");
 		bopt = RAW_BINARY;
+		argc--;
+		break;
+	      case 'e':
+		entry_address [entry_count++] = strtoul (*++argv, &p, 0);
+		if (*p)
+		  crash ("address required");
 		argc--;
 		break;
 	      case 'v':
