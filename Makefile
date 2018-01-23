@@ -55,7 +55,7 @@ endif
 # let me know why so I can improve this Makefile.
 # -----------------------------------------------------------------------------
 
-VERSION = 0.12
+VERSION = 0.15
 
 PACKAGE = dis6502
 
@@ -67,7 +67,7 @@ HDRS = dis.h
 MAN = dis6502.1
 MISC = COPYING README README.Bond README.Finkelstein Makefile
 
-DISTFILES = $(MISC) $(HDRS) $(CSRCS) $(LSRCS)
+DISTFILES = $(MISC) $(HDRS) $(CSRCS) $(LSRCS) $(MAN)
 DISTNAME = $(PACKAGE)-$(VERSION)
 
 BIN_DISTFILES = COPYING README $(TARGETS)
