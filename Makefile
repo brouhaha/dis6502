@@ -1,7 +1,6 @@
 # dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
 # Makefile
-# $Id$
-# Copyright 2000-2003 Eric Smith
+# Copyright 2000-2018 Eric Smith <spacwar@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License version 2 as
@@ -93,7 +92,7 @@ dist: $(DISTFILES)
 
 
 clean:
-	rm -f $(OBJS) $(AUTO_CSRCS)
+	rm -f $(OBJS) $(AUTO_CSRCS) lex.c *.d
 
 
 dis6502:	$(OBJS)
