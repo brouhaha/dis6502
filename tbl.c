@@ -83,6 +83,7 @@ struct info optbl[256] = {
 	[0x41] = { "eor", 2, INX },
 
 	[0x45] = { "eor", 2, ZPG },
+	[0x46] = { "lsr", 2, ZPG },
 
         [0x48] = { "pha", 1, IMP },
 	[0x49] = { "eor", 2, IMM },
