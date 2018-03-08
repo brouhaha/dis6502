@@ -1,8 +1,7 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: main.c 26 2004-01-17 23:28:23Z eric $
- * Copyright 2000-2016 Eric Smith <eric@brouhaha.com>
+ * Copyright 2000-2018 Eric Smith <spacewar@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -21,6 +20,7 @@
  */
 
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,7 +28,8 @@
 
 #include "dis.h"
 
-int sevenbit = 0;  /* if true, mask character data with 0x7f to ignore MSB */
+bool sevenbit = false;  /* if true, mask character data with 0x7f to ignore MSB */
+bool prodos = false;
 
 #define NTSTART 500
 
@@ -120,6 +121,18 @@ void trace_inst (addr_t addr)
 	  f[addr++] |= TDONE;
 	  f[addr++] |= TDONE;
 	  break;
+	}
+
+      // handle ProDOS MLI calls
+      if (prodos && (opcode == 0x20) && (operand == 0xbf00))
+	{
+	  f[addr++] |= TDONE;  // system call number
+	  uint16_t parameter_list = getword(addr);
+	  f[addr++] |= TDONE;
+	  f[addr++] |= TDONE;
+	  f[parameter_list] |= DREF;
+	  save_ref(istart, operand);
+	  continue;
 	}
 
       /* Mark data references */

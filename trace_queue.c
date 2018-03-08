@@ -1,8 +1,7 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: trace_queue.c,v 1.2 2003/09/15 21:49:25 eric Exp $
- * Copyright 2000-2003 Eric Smith <eric@brouhaha.com>
+ * Copyright 2000-2018 Eric Smith <spacewar@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -20,7 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include "dis.h"

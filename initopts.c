@@ -1,10 +1,8 @@
 /* 
- * 
- *  dis [-p predefineds] file
- *
- *  The -p option may be repeated.
+ * Copyright 2001-2018 Eric Smith <spacewar@gmail.com>
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -37,7 +35,8 @@ void usage (void)
                    "            -p <file>      predefs\n"
 	           "            -e <address>   alternate entry point address\n"
 	           "            -v <address>   alternate vector address\n"
-	   	   "            -7             mask character data to 7-bit",
+	   	   "            -7             mask character data to 7-bit\n"
+	           "            -P             decode ProDOS MLI calls\n",
 	   progname);
   exit (1);
 }
@@ -96,7 +95,10 @@ void initopts (int argc, char *argv[])
 		bopt = ATARI_BOOT;
 		break;
 	      case '7':
-		sevenbit = 1;
+		sevenbit = true;
+		break;
+	      case 'P':
+		prodos = true;
 		break;
 	      default: crash("Invalid option letter");
 	      }

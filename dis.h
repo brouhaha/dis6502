@@ -1,8 +1,7 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: dis.h 26 2004-01-17 23:28:23Z eric $
- * Copyright 2000-2016 Eric Smith <spacewar@gmail.com>
+ * Copyright 2000-2018 Eric Smith <spacewar@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -21,7 +20,7 @@
  */
 
 
-extern int sevenbit;  /* if true, mask character data with 0x7f
+extern bool sevenbit;  /* if true, mask character data with 0x7f
 			 to ignore MSB */
 
 typedef uint16_t addr_t;
@@ -40,6 +39,10 @@ extern int base_address, vector_address;
 #define MAX_ENTRY 100
 extern int entry_count;
 extern int entry_address[MAX_ENTRY];
+
+
+extern bool prodos;
+
 
 extern int asmout;
 extern unsigned char f[];

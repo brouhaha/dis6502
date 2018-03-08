@@ -1,8 +1,7 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: print.c 26 2004-01-17 23:28:23Z eric $
- * Copyright 2000-2014 Eric Smith <eric@brouhaha.com>
+ * Copyright 2000-2018 Eric Smith <spacewar@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -20,7 +19,7 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111 USA
  */
 
-
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -247,7 +246,7 @@ int print_data (addr_t i)
 	i++;
 
 	for (j = 1; j < 8; j++) {
-		if (f[i] & (JREF | SREF | DREF) || ((f[i] & LOADED) == 0)) 
+		if (f[i] & (JREF | SREF | DREF | ISOP) || ((f[i] & LOADED) == 0)) 
 			break;
 		else
 			printf(",$%02x", getbyte(i));

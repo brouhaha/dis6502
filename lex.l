@@ -1,8 +1,7 @@
 /*
  * dis6502 by Robert Bond, Udi Finkelstein, and Eric Smith
  *
- * $Id: lex.l 26 2004-01-17 23:28:23Z eric $
- * Copyright 2001-2014 Eric Smith <eric@brouhaha.com>
+ * Copyright 2001-2018 Eric Smith <spacewar@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 as
@@ -23,6 +22,7 @@
 
 %{
 #undef ECHO
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
