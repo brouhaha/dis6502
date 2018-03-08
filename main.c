@@ -616,11 +616,9 @@ void binaryloadfile (void)
 
   if (entry_count)
     {
-      int i;
-      char *label;
-      label = malloc(7);
-      for (i = 0; i < entry_count; i++)
+      for (int i = 0; i < entry_count; i++)
 	{
+	  char *label = malloc(7);
 	  sprintf (label, "e_%04x", entry_address[i]);
 	  printf("label: %s\n", label);
 	  start_trace (entry_address[i], label);
