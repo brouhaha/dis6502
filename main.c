@@ -224,8 +224,7 @@ void start_trace (addr_t loc, char *name)
 
 void do_ptrace (void)
 {
-  int i;
-  for (i = 0; i<tstarti; i++)
+  for (int i = 0; i<tstarti; i++)
     {
       char *trace_sym = (char *) malloc (6);
       sprintf (trace_sym, "P%04x", tstart [i]);
@@ -236,16 +235,13 @@ void do_ptrace (void)
 
 void do_rtstab (void)
 {
-  int i, j;
-  int loc, code;
-
-  for (i = 0; i < rtstab_count; i++)
+  for (int i = 0; i < rtstab_count; i++)
     {
-      loc = rtstab_addr [i];
-      for (j = 0; j < rtstab_size [i]; j++)
+      int loc = rtstab_addr [i];
+      for (int j = 0; j < rtstab_size [i]; j++)
 	{
 	  char *trace_sym = (char *) malloc (6);
-	  code = d [loc] + (d [loc + 1] << 8) + 1;
+	  int code = d [loc] + (d [loc + 1] << 8) + 1;
 	  sprintf (trace_sym, "T%04x", code);
 	  start_trace (code, trace_sym);
 	  loc += 2;
@@ -255,16 +251,14 @@ void do_rtstab (void)
 
 void do_jtab2 (void)
 {
-  int i, j;
-  int loc_l, loc_h, code;
-  for (i = 0; i < jtab2_count; i++)
+  for (int i = 0; i < jtab2_count; i++)
     {
-      loc_l = jtab2_addr_low [i];
-      loc_h = jtab2_addr_high [i];
-      for (j = 0; j < jtab2_size [i]; j++)
+      int loc_l = jtab2_addr_low [i];
+      int loc_h = jtab2_addr_high [i];
+      for (int j = 0; j < jtab2_size [i]; j++)
 	{
 	  char *trace_sym = (char *) malloc (6);
-	  code = d [loc_l + j] + (d [loc_h + j] << 8);
+	  int code = d [loc_l + j] + (d [loc_h + j] << 8);
 	  sprintf (trace_sym, "T%04x", code);
 	  start_trace (code, trace_sym);
 	}
@@ -321,7 +315,6 @@ int main (int argc, char *argv[])
 void get_predef (void)
 {
 	long loc, loc2;
-	int i;
 	int size;
 	char *name;
 
@@ -414,7 +407,7 @@ void get_predef (void)
 			    size = token.ival;
 			    f[loc] |= NAMED;
 			    save_name(loc, name);
-			    for (i = 1; i < size; i++)
+			    for (int i = 1; i < size; i++)
 			      {
 				f [loc + i] |= OFFSET;
 				offset [loc + i] = -i;
@@ -462,7 +455,6 @@ void loadboot (void)
 
 	FILE *fp;
 	int base_addr;
-	register int i;
 	int len;
 
 	fp = fopen(file, "r");
@@ -482,7 +474,7 @@ void loadboot (void)
 	if (fread((char *)&d[base_addr], 1, len, fp) != len) 
 		crash("input too short");
 
-	for(i = base_addr; len > 0; len--) 
+	for(int i = base_addr; len > 0; len--) 
 		f[i++] |= LOADED;
 
 	start_trace(base_addr+6, "**BOOT**");
@@ -494,7 +486,7 @@ void loadfile (void)
 	FILE *fp;
 	int base_addr;
 	int last_addr;
-	register int i;
+	int i;
 	int had_header;
 	int tmp;
 
@@ -616,12 +608,12 @@ void binaryloadfile (void)
 
   if (entry_count)
     {
-      for (int i = 0; i < entry_count; i++)
+      for (int j = 0; j < entry_count; j++)
 	{
 	  char *label = malloc(7);
-	  sprintf (label, "e_%04x", entry_address[i]);
+	  sprintf (label, "e_%04x", entry_address[j]);
 	  printf("label: %s\n", label);
-	  start_trace (entry_address[i], label);
+	  start_trace (entry_address[j], label);
 	}
     }
   else
