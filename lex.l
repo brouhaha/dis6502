@@ -62,6 +62,8 @@ alphanum	[0-9a-zA-Z_]
 
 \.[Jj][Tt][Aa][Bb]2	{ return TJTAB2; }
 
+\.[Jj][Tt][Aa][Bb]	{ return TJTAB; }
+
 {digit}+		{
 			  (void)sscanf(yytext, "%d", &token.ival); 
 			  return NUMBER;

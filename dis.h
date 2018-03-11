@@ -119,8 +119,9 @@ char *get_name(addr_t loc);
 #define TSTOP 262
 #define TRTSTAB 263
 #define TJTAB2 264
-#define EQS 265
-#define OFS 266
+#define TJTAB 265
+#define EQS 266
+#define OFS 267
 
 extern FILE *yyin, *yyout;
 int lineno;

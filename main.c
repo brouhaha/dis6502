@@ -45,6 +45,12 @@ int rtstab_addr [RTSTAB_MAX];		/* .rtstab directive */
 int rtstab_size [RTSTAB_MAX];
 int rtstab_count = 0;
 
+#define JTAB_MAX 50
+
+int jtab_addr [JTAB_MAX];		/* .jtab directive */
+int jtab_size [JTAB_MAX];
+int jtab_count = 0;
+
 #define JTAB2_MAX 50
 
 int jtab2_addr_low  [JTAB2_MAX];	/* .jtab2 directive */
@@ -249,6 +255,22 @@ void do_rtstab (void)
     }
 }
 
+void do_jtab (void)
+{
+  for (int i = 0; i < jtab_count; i++)
+    {
+      int loc = jtab_addr [i];
+      for (int j = 0; j < jtab_size [i]; j++)
+	{
+	  char *trace_sym = (char *) malloc (6);
+	  int code = d [loc] + (d [loc + 1] << 8);
+	  sprintf (trace_sym, "T%04x", code);
+	  start_trace (code, trace_sym);
+	  loc += 2;
+	}
+    }
+}
+
 void do_jtab2 (void)
 {
   for (int i = 0; i < jtab2_count; i++)
@@ -302,6 +324,7 @@ int main (int argc, char *argv[])
 
 	do_ptrace ();
 	do_rtstab ();
+	do_jtab ();
 	do_jtab2 ();
 
 	trace_all ();
@@ -339,6 +362,20 @@ void get_predef (void)
 		  size = token.ival;
 		  rtstab_addr [rtstab_count] = loc;
 		  rtstab_size [rtstab_count++] = size;
+		  break;
+		case TJTAB:
+		  if (yylex() != NUMBER)
+		    crash(".jtab needs an address operand");
+		  loc = token.ival;
+		  if (loc > 0x10000 || loc < 0)
+		    crash("Number out of range");
+		  if (yylex() != ',')
+		    crash(".jtab needs a comma");
+		  if (yylex() != NUMBER)
+		    crash(".jtab needs a comma");
+		  size = token.ival;
+		  jtab_addr [jtab_count] = loc;
+		  jtab_size [jtab_count++] = size;
 		  break;
 		case TJTAB2:
 		  if (yylex() != NUMBER)
