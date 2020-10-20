@@ -272,7 +272,7 @@ void do_jtab (void)
 }
 
 void do_jtab2 (void)
-{
+{ 
   for (int i = 0; i < jtab2_count; i++)
     {
       int loc_l = jtab2_addr_low [i];
@@ -492,7 +492,7 @@ void loadboot (void)
 
 	FILE *fp;
 	int base_addr;
-	int len;
+	int len, i;
 
 	fp = fopen(file, "r");
 	cur_file = NULL;
@@ -511,7 +511,7 @@ void loadboot (void)
 	if (fread((char *)&d[base_addr], 1, len, fp) != len) 
 		crash("input too short");
 
-	for(int i = base_addr; len > 0; len--) 
+	for(i = base_addr; len > 0; len--) 
 		f[i++] |= LOADED;
 
 	start_trace(base_addr+6, "**BOOT**");
