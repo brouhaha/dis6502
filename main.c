@@ -492,7 +492,7 @@ void loadboot (void)
 
 	FILE *fp;
 	int base_addr;
-	int len, i;
+	int len;
 
 	fp = fopen(file, "r");
 	cur_file = NULL;
@@ -511,7 +511,7 @@ void loadboot (void)
 	if (fread((char *)&d[base_addr], 1, len, fp) != len) 
 		crash("input too short");
 
-	for(i = base_addr; len > 0; len--) 
+	for(int i = base_addr; len > 0; len--) 
 		f[i++] |= LOADED;
 
 	start_trace(base_addr+6, "**BOOT**");
