@@ -30,7 +30,7 @@ DEBUG=1
 #STATIC=1
 
 
-CFLAGS = -Wall --std=c99
+CFLAGS = -Wall --std=gnu99
 LDFLAGS =
 LDLIBS =
 
