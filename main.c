@@ -230,8 +230,7 @@ void start_trace (addr_t loc, char *name)
 
 void do_ptrace (void)
 {
-  int i;
-  for (i = 0; i<tstarti; i++)
+  for (int i = 0; i<tstarti; i++)
     {
       char *trace_sym = (char *) malloc (6);
       sprintf (trace_sym, "P%04x", tstart [i]);
@@ -242,11 +241,10 @@ void do_ptrace (void)
 
 void do_rtstab (void)
 {
-  int i, j;
-  for (i = 0; i < rtstab_count; i++)
+  for (int i = 0; i < rtstab_count; i++)
     {
       int loc = rtstab_addr [i];
-      for (j = 0; j < rtstab_size [i]; j++)
+      for (int j = 0; j < rtstab_size [i]; j++)
 	{
 	  char *trace_sym = (char *) malloc (6);
 	  int code = d [loc] + (d [loc + 1] << 8) + 1;
@@ -259,11 +257,10 @@ void do_rtstab (void)
 
 void do_jtab (void)
 {
-  int i, j;
-  for (i = 0; i < jtab_count; i++)
+  for (int i = 0; i < jtab_count; i++)
     {
       int loc = jtab_addr [i];
-      for (j = 0; j < jtab_size [i]; j++)
+      for (int j = 0; j < jtab_size [i]; j++)
 	{
 	  char *trace_sym = (char *) malloc (6);
 	  int code = d [loc] + (d [loc + 1] << 8);
@@ -341,7 +338,7 @@ int main (int argc, char *argv[])
 void get_predef (void)
 {
 	long loc, loc2;
-	int size, i;
+	int size;
 	char *name;
 
 	for(;;) 
@@ -447,7 +444,7 @@ void get_predef (void)
 			    size = token.ival;
 			    f[loc] |= NAMED;
 			    save_name(loc, name);
-			    for (i = 1; i < size; i++)
+			    for (int i = 1; i < size; i++)
 			      {
 				f [loc + i] |= OFFSET;
 				offset [loc + i] = -i;
@@ -619,7 +616,7 @@ void binaryloadfile (void)
 {
   FILE *fp;
   addr_t i;
-  int c, j;
+  int c;
   addr_t reset, irq, nmi;
 
   fp = fopen (file, "r");
@@ -648,7 +645,7 @@ void binaryloadfile (void)
 
   if (entry_count)
     {
-      for (j = 0; j < entry_count; j++)
+      for (int j = 0; j < entry_count; j++)
 	{
 	  char *label = malloc(7);
 	  sprintf (label, "e_%04x", entry_address[j]);
