@@ -272,7 +272,7 @@ void do_jtab (void)
 }
 
 void do_jtab2 (void)
-{ 
+{
   for (int i = 0; i < jtab2_count; i++)
     {
       int loc_l = jtab2_addr_low [i];
